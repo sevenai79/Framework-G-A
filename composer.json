@@ -1,0 +1,21 @@
+{
+    "name": "sevenai/backend-sevenaitemplate",
+    "description": "Template di un backend",
+    "type": "project",
+    "require": {
+        "phpmailer/phpmailer": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sevenai\\BackendSevenaitemplate\\": "src/",
+            "Config\\": "config/",
+            "Autenticazione\\": "Autenticazione/",
+            "Backend\\": ""
+        }
+    },
+    "authors": [
+        {
+            "name": "Andrea Ingardo"
+        }
+    ]
+}
