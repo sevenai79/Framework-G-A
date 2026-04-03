@@ -1,5 +1,32 @@
+# Environment
 /.env
 /.env.local
 /.env.*.local
 !.env.example
+
+# IDE / Editor
+/.idea/
+/.vscode/
+/*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+*.tmp
+
+# Test / quality tools
+/.phpunit.cache/
+/phpunit.result.cache
+/.php-cs-fixer.cache
+/.phpstan/
+.phpstan.cache
+
+# Coverage reports
+/coverage/
+/build/coverage/
+
+# Vendor
 /vendor/
