@@ -6,72 +6,106 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitfe5844985e3cae0b54930b14ec76109a
 {
+    public static $files = array (
+        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
-        'S' =>
+        'S' => 
         array (
+            'Symfony\\Polyfill\\Php80\\' => 23,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
+            'Symfony\\Polyfill\\Ctype\\' => 23,
             'Sevenai\\BackendSevenaitemplate\\' => 31,
         ),
-        'P' =>
+        'P' => 
         array (
+            'PhpOption\\' => 10,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
-        'C' =>
+        'G' => 
+        array (
+            'GrahamCampbell\\ResultType\\' => 26,
+        ),
+        'D' => 
+        array (
+            'Dotenv\\' => 7,
+        ),
+        'C' => 
         array (
             'Config\\' => 7,
         ),
-        'B' =>
+        'B' => 
         array (
             'Backend\\' => 8,
         ),
-        'A' =>
+        'A' => 
         array (
             'Autenticazione\\' => 15,
+            'Assets\\' => 7,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Sevenai\\BackendSevenaitemplate\\' =>
+        'Symfony\\Polyfill\\Php80\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
+        ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
+        'Symfony\\Polyfill\\Ctype\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
+        'Sevenai\\BackendSevenaitemplate\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'PHPMailer\\PHPMailer\\' =>
+        'PhpOption\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
+        ),
+        'PHPMailer\\PHPMailer\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
-        'Config\\' =>
+        'GrahamCampbell\\ResultType\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/graham-campbell/result-type/src',
+        ),
+        'Dotenv\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/vlucas/phpdotenv/src',
+        ),
+        'Config\\' => 
         array (
             0 => __DIR__ . '/../..' . '/config',
         ),
-        'Backend\\' =>
+        'Backend\\' => 
         array (
             0 => __DIR__ . '/../..' . '/',
         ),
-        'Autenticazione\\' =>
+        'Autenticazione\\' => 
         array (
             0 => __DIR__ . '/../..' . '/Autenticazione',
+        ),
+        'Assets\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/assets',
         ),
     );
 
     public static $classMap = array (
-        'Autenticazione\\Servizi' => __DIR__ . '/../..' . '/Autenticazione/Servizi.php',
-        'Backend\\Dati' => __DIR__ . '/../..' . '/Dati.php',
-        'Backend\\Gestioni' => __DIR__ . '/../..' . '/Gestioni.php',
-        'Backend\\MotoreBackend' => __DIR__ . '/../..' . '/MotoreBackend.php',
-        'Backend\\Servizi' => __DIR__ . '/../..' . '/Servizi.php',
+        'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'Config\\Database' => __DIR__ . '/../..' . '/config/Database.php',
-        'Config\\Response' => __DIR__ . '/../..' . '/config/Response.php',
-        'Config\\SendEmail' => __DIR__ . '/../..' . '/config/SendEmail.php',
-        'Config\\Session' => __DIR__ . '/../..' . '/config/Session.php',
-        'Config\\Utils' => __DIR__ . '/../..' . '/config/Utils.php',
-        'Config\\Validator' => __DIR__ . '/../..' . '/config/Validator.php',
-        'PHPMailer\\PHPMailer\\DSNConfigurator' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/DSNConfigurator.php',
-        'PHPMailer\\PHPMailer\\Exception' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/Exception.php',
-        'PHPMailer\\PHPMailer\\OAuth' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuth.php',
-        'PHPMailer\\PHPMailer\\OAuthTokenProvider' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuthTokenProvider.php',
-        'PHPMailer\\PHPMailer\\PHPMailer' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/PHPMailer.php',
-        'PHPMailer\\PHPMailer\\POP3' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/POP3.php',
-        'PHPMailer\\PHPMailer\\SMTP' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/SMTP.php',
+        'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+        'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
+        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

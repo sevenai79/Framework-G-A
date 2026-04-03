@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Backend;
 
-use Config\Response;
+use Assets\Response;
 
 class MotoreBackend
 {

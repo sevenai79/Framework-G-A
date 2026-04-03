@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Autenticazione;
 
 use Config\Database;
-use Config\Response;
-use Config\Session;
-use Config\Utils;
-use Config\Validator;
+use Assets\Response;
+use Assets\Session;
+use Assets\Utils;
+use Assets\Validator;
 
 class Servizi
 {

@@ -3,12 +3,14 @@
     "description": "Template di un backend",
     "type": "project",
     "require": {
-        "phpmailer/phpmailer": "^7.0"
+        "phpmailer/phpmailer": "^7.0",
+        "vlucas/phpdotenv": "^5.6.2"
     },
     "autoload": {
         "psr-4": {
             "Sevenai\\BackendSevenaitemplate\\": "src/",
             "Config\\": "config/",
+            "Assets\\": "assets/",
             "Autenticazione\\": "Autenticazione/",
             "Backend\\": ""
         }

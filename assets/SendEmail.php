@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Config;
+namespace Assets;
 
 use PHPMailer\PHPMailer\Exception as MailerException;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -10,9 +10,9 @@ use Throwable;
 
 final class SendEmail
 {
-    private Database $db;
+    private $db;
 
-    public function __construct(Database $db)
+    public function __construct($db)
     {
         $this->db = $db;
     }

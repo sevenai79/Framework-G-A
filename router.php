@@ -5,10 +5,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Config\Database;
-use Config\Response;
-use Config\Session;
-use Config\Utils;
-use Config\Validator;
+use Config\Env;
+use Assets\Response;
+use Assets\Session;
+use Assets\Utils;
+use Assets\Validator;
 
 //IL numero di rotte è limitato e definito in modo statico 
 //per evitare problemi di sicurezza e semplificare la gestione del codice
@@ -28,6 +29,9 @@ const ROUTES = [
 ];
 
 try {
+    //Caricamento variabili ambiente
+    Env::load(__DIR__);
+
     $db = new Database();
     $session = new Session($db);
     $utils = new Utils($db);
@@ -78,11 +82,13 @@ try {
     //Inclusione file area e istanziazione classe handler
     require_once $file;
 
+    //Controllo esistenza classe handler
     $class = $route['class'];
     if (!class_exists($class)) {
         Response::error('Classe area non trovata', 500);
     }
 
+    //Esecuzione handler area
     $handler = new $class($dataSanitized, $db, $session, $utils);
     $handler->execute();
 

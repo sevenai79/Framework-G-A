@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Config;
 
+use Assets\Validator;
 use PDO;
 use PDOException;
 use RuntimeException;
@@ -9,25 +12,44 @@ use Throwable;
 
 class Database
 {
-    private $host = 'localhost';
-    private $db_name = 'my_database';
-    private $username = 'root';
-    private $password = '';
-    private $conn;
-    private $lastLogError = null;
+    private string $host;
+    private int $port;
+    private string $dbName;
+    private string $username;
+    private string $password;
+    private string $charset;
+    private ?PDO $conn;
+    private ?string $lastLogError = null;
 
     public function __construct()
     {
+        $this->host = Env::getString('DB_HOST', 'localhost') ?? 'localhost';
+        $this->port = Env::getInt('DB_PORT', 3306);
+        $this->dbName = Env::getString('DB_NAME', 'my_database') ?? 'my_database';
+        $this->username = Env::getString('DB_USER', 'root') ?? 'root';
+        $this->password = Env::getString('DB_PASS', '') ?? '';
+        $this->charset = Env::getString('DB_CHARSET', 'utf8mb4') ?? 'utf8mb4';
+
+        $this->validateConfiguration();
         $this->conn = $this->connect();
     }
 
-    private function connect()
+    private function connect(): PDO
     {
         $this->conn = null;
 
         try {
-            $this->conn = new PDO('mysql:host=' . $this->host . ';dbname=' . $this->db_name, $this->username, $this->password);
+            $dsn = sprintf(
+                'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+                $this->host,
+                $this->port,
+                $this->dbName,
+                $this->charset
+            );
+
+            $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new RuntimeException('Connection Error: ' . $e->getMessage(), (int) $e->getCode(), $e);
         }
@@ -35,11 +57,34 @@ class Database
         return $this->conn;
     }
 
+    private function validateConfiguration(): void
+    {
+        if ($this->host === '') {
+            throw new RuntimeException('Configurazione DB non valida: DB_HOST mancante');
+        }
+
+        if ($this->dbName === '') {
+            throw new RuntimeException('Configurazione DB non valida: DB_NAME mancante');
+        }
+
+        if ($this->username === '') {
+            throw new RuntimeException('Configurazione DB non valida: DB_USER mancante');
+        }
+
+        if ($this->port < 1 || $this->port > 65535) {
+            throw new RuntimeException('Configurazione DB non valida: DB_PORT fuori range');
+        }
+
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $this->charset)) {
+            throw new RuntimeException('Configurazione DB non valida: DB_CHARSET non supportato');
+        }
+    }
+
     public function selectQuery($query, $params = [])
     {
         $stmt = $this->conn->prepare($query);
         $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll();
     }
 
     public function insertQuery($query, $params = [])

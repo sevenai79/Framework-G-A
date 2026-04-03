@@ -1,16 +1,27 @@
 <?php
 
-namespace Config;
+declare(strict_types=1);
+
+namespace Assets;
+
+use Config\Env;
 
 class Utils
 {
     //I parametri della class sono al momento inutilizzati, ma potrebbero essere utili in futuro per funzioni che necessitano di accesso al database o alla sessione
     private $db;
-    const URL = "https://santihubslr.it/";
-    const BACKEND_URL = "https://santihubslr.it/backend/";
+    private string $url;
+    private string $backendUrl;
+
     public function __construct($db)
     {
         $this->db = $db;
+        $this->url = $this->normalizeUrl(
+            Env::getString('APP_URL', 'https://santihubslr.it/') ?? 'https://santihubslr.it/'
+        );
+        $this->backendUrl = $this->normalizeUrl(
+            Env::getString('BACKEND_URL', 'https://santihubslr.it/backend/') ?? 'https://santihubslr.it/backend/'
+        );
     }
 
     public function sanitizeMixedArray($data, $allowHtml = false)
@@ -55,12 +66,22 @@ class Utils
 
     public function getUrl()
     {
-        return self::URL;
+        return $this->url;
     }
 
     public function getBackendUrl()
     {
-        return self::BACKEND_URL;
+        return $this->backendUrl;
+    }
+
+    private function normalizeUrl(string $url): string
+    {
+        $clean = trim($url);
+        if ($clean === '') {
+            return '/';
+        }
+
+        return rtrim($clean, '/') . '/';
     }
 }
 
