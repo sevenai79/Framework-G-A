@@ -8,7 +8,7 @@ use PHPMailer\PHPMailer\Exception as MailerException;
 use PHPMailer\PHPMailer\PHPMailer;
 use Throwable;
 
-final class SendEmail
+class SendEmail
 {
     private $db;
 

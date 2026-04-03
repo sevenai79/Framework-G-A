@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Assets;
 
-final class Response
+class Response
 {
     public static function okPayload(
         array $data = [],

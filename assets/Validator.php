@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Assets;
 
-final class Validator
+class Validator
 {
     private array $data;
     private array $errors = [];
