@@ -1,107 +1,132 @@
-# Mini Framework Backend PHP - Documentazione Completa
+# Mini Framework Backend PHP
 
-## 1) Obiettivo del framework
-Questo progetto è un mini framework backend in PHP pensato per:
+Backend PHP modulare con:
 
-- avere un solo punto di ingresso (`router.php`)
-- instradare richieste verso aree (`dati`, `gestioni`, `servizi`)
-- delegare la logica ai moduli (`Autenticazione`, `Pazienti`, ecc.)
-- uniformare validazioni e risposte JSON
-- gestire email SMTP e logging su database
+- entrypoint unico (`router.php`)
+- dispatch per area (`dati`, `gestioni`, `servizi`)
+- moduli dinamici (`Autenticazione`, ecc.)
+- validazione input e response JSON standard
+- configurazione tramite `.env`
+- helper DB/logging e invio email SMTP
 
-Il framework è adatto a progetti gestionali o API custom con struttura modulare.
+## Requisiti
 
----
+- PHP >= 7.4
+- Estensioni PHP: `pdo`, `pdo_mysql`, `json`, `session`
+- Composer
+- MySQL/MariaDB
 
-## 2) Struttura del progetto (non vendor)
+## Installazione
 
-### File principali root
-- `router.php` -> entrypoint HTTP
-- `Dati.php` -> dispatcher area `dati`
-- `Gestioni.php` -> dispatcher area `gestioni`
-- `Servizi.php` -> dispatcher area `servizi`
-- `MotoreBackend.php` -> risoluzione dinamica modulo/area
+1. Installa dipendenze:
 
-### Moduli
-- `Autenticazione/Servizi.php` -> modulo autenticazione (login/logout)
+```bash
+composer install
+```
 
-### Config
-- `config/Database.php` -> connessione DB + query helper + logging su DB
-- `config/Session.php` -> gestione sessione utente
-- `config/Utils.php` -> sanificazione input e URL helper
-- `config/Response.php` -> risposte JSON standard
-- `config/Validator.php` -> validazione campi input
-- `config/SendEmail.php` -> invio email via SMTP con config da DB
+2. Crea il file ambiente:
 
-### Tabelle SQL
-- `tables/smtp_config.sql` -> tabella configurazione SMTP
-- `tables/logs.sql` -> tabella logs applicativi
+```bash
+cp .env.example .env
+```
 
----
+3. Compila i valori in `.env` (DB e URL).
+4. Importa le tabelle SQL:
+   - `tables/logs.sql`
+   - `tables/smtp_config.sql`
+5. Rigenera autoload se aggiungi/sposti classi:
 
-## 3) Autoload e namespace
-Da `composer.json`:
+```bash
+composer dump-autoload -o
+```
 
-- `Config\\` -> cartella `config/`
-- `Autenticazione\\` -> cartella `Autenticazione/`
-- `Backend\\` -> root progetto (`Dati.php`, `Servizi.php`, ecc.)
+## Variabili ambiente (`.env`)
 
-Se aggiungi nuove classi:
-1. rispetta namespace e cartella
-2. esegui `composer dump-autoload -o`
+Template in `.env.example`:
 
----
+```dotenv
+APP_ENV=local
+APP_DEBUG=true
 
-## 4) Flusso completo di una richiesta
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=my_database
+DB_USER=root
+DB_PASS=
+DB_CHARSET=utf8mb4
 
-### Step A: arrivo richiesta in `router.php`
-`router.php`:
-1. carica autoload
-2. istanzia `Database`, `Session`, `Utils`
-3. legge JSON da `php://input`
-4. valida che il JSON sia corretto
-5. sanitizza tutto con `Utils::sanitizeMixedArray()`
-6. valida campi obbligatori con `Validator`:
-   - `area` obbligatoria e deve essere tra `dati|gestioni|servizi`
-   - `modulo` obbligatorio (non esiste default automatico)
-   - `azione` obbligatoria
-7. se `modulo != Autenticazione`, richiede sessione attiva
-8. instrada verso classe area (`Backend\Dati`, `Backend\Gestioni`, `Backend\Servizi`)
-9. chiama `execute()` sull’handler area
+APP_URL=http://localhost/
+BACKEND_URL=http://localhost/backend/
+```
 
-In caso errore, usa sempre `Response::error(...)` o `Response::validation(...)`.
+Note:
 
-### Step B: dispatcher area (`Dati.php`, `Gestioni.php`, `Servizi.php`)
-Ogni classe area:
-1. prende `$data`, `$db`, `$session`, `$utils`
-2. in `execute()` chiama `callMotoreBackend()`
-3. imposta `area` nel payload con nome classe modulo corretto:
-   - `Dati`
-   - `Gestioni`
-   - `Servizi`
-4. delega a `MotoreBackend`
+- `.env` non va versionato (già ignorato in `.gitignore`).
+- In produzione preferisci variabili di sistema.
 
-### Step C: `MotoreBackend.php`
-`MotoreBackend::callModulo($data)`:
-1. legge `modulo` e `area`
-2. costruisce path file modulo:
-   - `__DIR__ . '/' . $modulo . '/' . $area . '.php'`
-3. include il file
-4. costruisce FQCN modulo:
-   - `$modulo . '\\' . $area`
-5. istanzia classe modulo e chiama `execute()`
+## Struttura progetto
 
-Esempio:
-- payload: `{"area":"servizi","modulo":"Autenticazione","azione":"login"}`
-- area dispatcher imposta `area = 'Servizi'`
-- motore cerca: `Autenticazione/Servizi.php`
-- classe attesa: `Autenticazione\Servizi`
+```text
+.
+├─ router.php
+├─ Dati.php
+├─ Gestioni.php
+├─ Servizi.php
+├─ MotoreBackend.php
+├─ composer.json
+├─ .env.example
+├─ assets/
+│  ├─ Response.php
+│  ├─ Session.php
+│  ├─ Utils.php
+│  ├─ Validator.php
+│  └─ SendEmail.php
+├─ config/
+│  ├─ Database.php
+│  └─ Env.php
+├─ Autenticazione/
+│  └─ Servizi.php
+└─ tables/
+   ├─ logs.sql
+   └─ smtp_config.sql
+```
 
----
+## Namespace e autoload
 
-## 5) Contratto payload JSON
+Da `composer.json` (PSR-4):
 
-Richiesta tipica:
+- `Config\\` -> `config/`
+- `Assets\\` -> `assets/`
+- `Autenticazione\\` -> `Autenticazione/`
+- `Backend\\` -> root progetto
+
+## Flusso richiesta
+
+1. `router.php` carica autoload e variabili ambiente (`Config\Env::load(__DIR__)`).
+2. Istanzia `Database`, `Session`, `Utils`.
+3. Legge `php://input` (JSON).
+4. Sanitizza input (`Utils::sanitizeMixedArray`).
+5. Valida campi obbligatori:
+   - `area` in `dati|gestioni|servizi`
+   - `modulo` (`/^[A-Za-z][A-Za-z0-9_]*$/`)
+   - `azione`
+6. Se `modulo !== "Autenticazione"` richiede sessione attiva.
+7. Esegue dispatcher area (`Backend\Dati|Gestioni|Servizi`).
+8. `MotoreBackend` risolve e richiama il modulo finale (`<Modulo>\<Area>`).
+
+## Contratto richiesta JSON
+
+Payload minimo:
+
+```json
+{
+  "area": "servizi",
+  "modulo": "Autenticazione",
+  "azione": "login"
+}
+```
+
+Esempio login:
 
 ```json
 {
@@ -113,220 +138,9 @@ Richiesta tipica:
 }
 ```
 
-Campi obbligatori lato router:
-- `area`
-- `modulo`
-- `azione`
+## Formato response JSON
 
-Nota importante:
-- `Autenticazione` NON è modulo default automatico.
-- È un modulo speciale del framework da usare quando serve autenticare utente.
-
----
-
-## 6) Risposte standard (`config/Response.php`)
-
-### Metodi principali
-- `Response::ok($data = [], $message = '...')`
-- `Response::error($error, $statusCode = 400)`
-- `Response::validation($errors, $message = 'Dati non validi')`
-- `Response::json($payload, $statusCode = 200)`
-
-### Comportamento
-- imposta `http_response_code`
-- imposta header `application/json`
-- stampa JSON
-- termina la richiesta (`exit`) per default
-
-### Payload helper (senza output immediato)
-- `okPayload(...)`
-- `errorPayload(...)`
-- `validationPayload(...)`
-- `encode(...)`
-
-Questi helper sono utili quando vuoi costruire una stringa JSON senza interrompere il flusso (es. `SendEmail`).
-
----
-
-## 7) Validazioni (`config/Validator.php`)
-
-`Validator` è fluente:
-
-```php
-$validator = (new Validator($data))
-    ->required('email')
-    ->email('email')
-    ->min('password', 8);
-```
-
-Metodi disponibili:
-- `required`
-- `email`
-- `min`
-- `max`
-- `numeric`
-- `in`
-- `regex`
-- `fails`, `passes`, `errors`, `first`
-
-Se una validazione fallisce:
-- aggiunge errori in array
-- non lancia eccezioni
-- decide il chiamante se bloccare o no il flusso
-
----
-
-## 8) Database (`config/Database.php`)
-
-### Responsabilità
-- connessione PDO MySQL
-- helper query:
-  - `selectQuery`
-  - `insertQuery`
-  - `updateQuery`
-  - `deleteQuery`
-- logging applicativo:
-  - `writeLog(...)`
-  - `writeLogNonBlocking(...)`
-  - `getLastLogError()`
-
-### Logging su DB
-`writeLog(...)` salva:
-- `posto`
-- `operazione`
-- `operatore`
-- `file`
-- `dati_mandati` (JSON)
-- `scritto_il` (datetime)
-
-Se fallisce, ritorna `false` e puoi leggere errore con `getLastLogError()`.
-
-`writeLogNonBlocking(...)` è fire-and-forget:
-- non blocca mai il processo principale
-- ideale per logging best effort
-
-Esempio:
-
-```php
-$db->writeLogNonBlocking(
-    'router',
-    'login',
-    'utente_42',
-    __FILE__,
-    $dataSanitized
-);
-```
-
----
-
-## 9) Sessioni (`config/Session.php`)
-
-`Session` incapsula l’uso di `$_SESSION`:
-- `set($key, $value)`
-- `get($key)`
-- `delete($key)`
-- `destroy()`
-- `isLoggedIn()` -> controlla `$_SESSION['utente_id']`
-- `getUtente()` -> query DB sull’utente in sessione
-
----
-
-## 10) Utility (`config/Utils.php`)
-
-`Utils::sanitizeMixedArray()`:
-- trim stringhe
-- rimuove caratteri di controllo
-- rimuove tag HTML (default)
-- supporta array annidati ricorsivamente
-
-`getUrl()` e `getBackendUrl()` forniscono URL base configurati.
-
----
-
-## 11) Modulo autenticazione (`Autenticazione/Servizi.php`)
-
-### Azioni supportate
-- `login`
-- `logout`
-
-### `login`
-1. valida `username` e `password` con `Validator`
-2. cerca utente in tabella `utenti`
-3. verifica password con `password_verify`
-4. salva `utente_id` in sessione
-5. risponde con `Response::ok`
-
-Se credenziali errate:
-- `Response::error('Credenziali non valide', 401)`
-
-### `logout`
-1. distrugge sessione
-2. risponde `ok`
-
----
-
-## 12) Email (`config/SendEmail.php`)
-
-`SendEmail` usa PHPMailer e legge SMTP da DB (`smtp_config`):
-
-### Metodo principale
-`send(string $to, string $subject, string $body, string $cc = '', string $bcc = '', ?array $files = null): string`
-
-### Funzionalità
-- validazione base input (`to`, `subject`, `body`)
-- lettura config SMTP attiva da DB
-- supporto `CC`/`BCC` separati da `;`
-- supporto allegati da `$_FILES['allegati']` o array custom
-- ritorna sempre JSON string (non interrompe il flusso)
-
-### Esempio
-
-```php
-$mailer = new \Config\SendEmail($db);
-$result = $mailer->send(
-    'utente@example.com',
-    'Oggetto',
-    '<p>Messaggio</p>',
-    'cc1@example.com;cc2@example.com',
-    'bcc@example.com',
-    $_FILES
-);
-```
-
----
-
-## 13) Tabelle SQL
-
-### `tables/smtp_config.sql`
-Tabella configurazione SMTP.
-Campi principali:
-- `host`, `port`, `secure`, `username`, `password`
-- `from_email`, `from_name`
-- `is_active`
-
-`SendEmail` prende la configurazione con:
-
-```sql
-SELECT host, port, secure, username, password, from_email, from_name
-FROM smtp_config
-WHERE is_active = 1
-ORDER BY id DESC
-LIMIT 1
-```
-
-### `tables/logs.sql`
-Tabella logs applicativi.
-Campi:
-- `posto`, `operazione`, `operatore`, `file`
-- `dati_mandati` JSON
-- `scritto_il`
-- indici su operatore/operazione/posto/data
-
----
-
-## 14) Formato risposte JSON
-
-### Successo
+Successo:
 
 ```json
 {
@@ -336,7 +150,7 @@ Campi:
 }
 ```
 
-### Errore
+Errore:
 
 ```json
 {
@@ -345,31 +159,151 @@ Campi:
 }
 ```
 
-### Errore validazione
+Errore validazione:
 
 ```json
 {
   "status": "ko",
   "error": "Dati non validi",
   "validation_errors": {
-    "campo": ["messaggio errore"]
+    "campo": [
+      "messaggio errore"
+    ]
   }
 }
 ```
 
----
+## Componenti principali
 
-## 15) Checklist per creare un nuovo modulo
+### `Config\Env`
 
-1. Crea cartella modulo, es. `Pazienti/`
-2. Crea file area che ti serve, es. `Pazienti/Servizi.php`
-3. Namespace file: `namespace Pazienti;`
-4. Classe: `class Servizi`
-5. Implementa `execute()` e switch su `azione`
-6. Usa `Validator` per input
-7. Usa `Response` per output
+- carica `.env` tramite `vlucas/phpdotenv`
+- getter tipizzati: `getString`, `getInt`, `getBool`
 
-Template base modulo:
+### `Config\Database`
+
+- legge connessione DB da env (`DB_*`)
+- valida configurazione minima
+- espone helper query:
+  - `selectQuery`
+  - `insertQuery`
+  - `updateQuery`
+  - `deleteQuery`
+- logging applicativo:
+  - `writeLog`
+  - `writeLogNonBlocking`
+  - `getLastLogError`
+
+### `Assets\Validator`
+
+Regole disponibili:
+
+- `required`
+- `email`
+- `min`
+- `max`
+- `numeric`
+- `in`
+- `regex`
+
+### `Assets\Response`
+
+- helper payload (`okPayload`, `errorPayload`, `validationPayload`)
+- invio JSON (`ok`, `error`, `validation`, `json`)
+
+### `Assets\Session`
+
+- wrapper sessione PHP (`set`, `get`, `delete`, `destroy`)
+- `isLoggedIn` su `$_SESSION['utente_id']`
+- `getUtente` con query sulla tabella `utenti`
+
+### `Assets\Utils`
+
+- sanitizzazione ricorsiva array misti
+- URL base da ambiente:
+  - `APP_URL`
+  - `BACKEND_URL`
+
+### `Assets\SendEmail`
+
+- invio mail via PHPMailer
+- config SMTP letta da tabella `smtp_config` (`is_active = 1`)
+- supporto CC/BCC separati da `;`
+- supporto allegati da chiave `allegati`
+
+## Modulo autenticazione
+
+File: `Autenticazione/Servizi.php`
+
+Azioni:
+
+- `login`
+- `logout`
+
+`login`:
+
+1. valida `username` e `password`
+2. legge utente da `utenti`
+3. verifica hash con `password_verify`
+4. salva `utente_id` in sessione
+
+`logout`:
+
+1. distrugge sessione
+2. ritorna risposta `ok`
+
+## Tabelle SQL
+
+### `tables/logs.sql`
+
+Tabella log applicativi con:
+
+- metadati richiesta (`posto`, `operazione`, `operatore`, `file`)
+- payload JSON (`dati_mandati`)
+- timestamp e indici utili
+
+### `tables/smtp_config.sql`
+
+Config SMTP con campi:
+
+- `host`, `port`, `secure`
+- `username`, `password`
+- `from_email`, `from_name`
+- `is_active`
+
+## Esempio chiamate API
+
+### Login
+
+```bash
+curl -X POST http://localhost/router.php \
+  -H "Content-Type: application/json" \
+  -d "{\"area\":\"servizi\",\"modulo\":\"Autenticazione\",\"azione\":\"login\",\"username\":\"demo\",\"password\":\"secret\"}"
+```
+
+### Logout
+
+```bash
+curl -X POST http://localhost/router.php \
+  -H "Content-Type: application/json" \
+  -d "{\"area\":\"servizi\",\"modulo\":\"Autenticazione\",\"azione\":\"logout\"}"
+```
+
+## Come creare un nuovo modulo
+
+1. Crea cartella modulo, esempio `Pazienti/`.
+2. Crea file area, esempio `Pazienti/Servizi.php`.
+3. Namespace coerente: `namespace Pazienti;`
+4. Classe area: `class Servizi`.
+5. Costruttore con firma:
+
+```php
+public function __construct(array $data, $db, $session, $utils)
+```
+
+6. Implementa `execute()` e gestisci `azione`.
+
+Template base:
 
 ```php
 <?php
@@ -378,8 +312,7 @@ declare(strict_types=1);
 
 namespace Pazienti;
 
-use Config\Response;
-use Config\Validator;
+use Assets\Response;
 
 class Servizi
 {
@@ -411,52 +344,14 @@ class Servizi
 }
 ```
 
----
+## Note operative
 
-## 16) Convenzioni operative consigliate
+- `router.php` accetta al momento solo body JSON.
+- Il modulo `Autenticazione` è pubblico (senza sessione), gli altri richiedono login.
+- Su filesystem case-sensitive (Linux) nomi cartelle/classi devono combaciare esattamente.
+- Il `vendor/` non è versionato: dopo clone va eseguito `composer install`.
 
-- valida sempre input con `Validator`
-- rispondi sempre con `Response`
-- usa `writeLogNonBlocking` per audit senza bloccare flussi
-- non esporre eccezioni raw in produzione
-- mantieni nomi moduli/namespace coerenti con cartelle
+## Documentazione extra
 
----
-
-## 17) Note importanti attuali
-
-- Connessione DB in `Database.php` è ancora hardcoded (`localhost`, `my_database`, `root`, password vuota): da spostare in `.env` o config protetta.
-- `router.php` attualmente gestisce solo JSON body.
-- `Autenticazione` è modulo pubblico per login/logout, ma non è default automatico.
-
----
-
-## 18) Quick start test API
-
-### Login
-
-```json
-{
-  "area": "servizi",
-  "modulo": "Autenticazione",
-  "azione": "login",
-  "username": "demo",
-  "password": "secret"
-}
-```
-
-### Logout
-
-```json
-{
-  "area": "servizi",
-  "modulo": "Autenticazione",
-  "azione": "logout"
-}
-```
-
-Se vuoi chiamare altri moduli, imposta:
-- `modulo` = nome cartella modulo
-- `area` = `dati|gestioni|servizi`
-- `azione` = metodo logico da eseguire dentro `execute()`
+- Miglioramenti architetturali proposti: `docs/guida-miglioramenti-framework.md`
 
